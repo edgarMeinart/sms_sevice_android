@@ -1,0 +1,7 @@
+<resources>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="address">Address</string>
+    <string name="port">Port</string>
+    <string name="app_name">Android</string>
+</resources>
