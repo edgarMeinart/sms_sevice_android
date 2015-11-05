@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (ip != null) {
                     Intent intent = new Intent(getApplicationContext(), SmsService.class);
                     intent.putExtra(SmsService.ADDRESS, address);
-                    intent.putExtra(SmsService.PORT, Long.valueOf(portTxt.getText().toString()));
+                    intent.putExtra(SmsService.PORT, Integer.valueOf(portTxt.getText().toString()));
                     startService(intent);
                 } else {
                     runOnUiThread(new Runnable() {

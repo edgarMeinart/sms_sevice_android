@@ -131,10 +131,12 @@ public class SmsService extends Service {
     }
 
     private class SocketConnectionThread extends Thread {
-        SocketAddress socketAddress;
+        private String host;
+        private int port;
 
         public SocketConnectionThread(String address, int port) {
-            socketAddress = new InetSocketAddress(address, port);
+            this.host = address;
+            this.port = port;
         }
 
         @Override
@@ -142,6 +144,7 @@ public class SmsService extends Service {
             while (!isInterrupted()) {
                 if (!socket.isConnected()) {
                     try {
+                        SocketAddress socketAddress = new InetSocketAddress(host, port);
                         socket.connect(socketAddress);
                     } catch (IOException e) {
                         e.printStackTrace();
