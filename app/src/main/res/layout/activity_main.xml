@@ -8,12 +8,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <EditText
+            android:text="sms.kvit.lv"
             android:id="@+id/addressText"
             android:hint="@string/address"
             android:singleLine="true"
             android:layout_width="150dp"
             android:layout_height="wrap_content" />
         <EditText
+            android:text="8010"
             android:id="@+id/portText"
             android:singleLine="true"
             android:maxLength="4"

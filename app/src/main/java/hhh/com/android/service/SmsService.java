@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
+import android.system.ErrnoException;
 import android.telephony.SmsManager;
 
 import com.hhh.protocol.IllegalConversionException;
@@ -26,6 +27,7 @@ import java.util.jar.Pack200;
  * Created by konstantin.bogdanov on 05.11.2015.
  */
 public class SmsService extends Service {
+    boolean started;
     private List<SmsMessage> messages;
 
     public final static String ADDRESS = "address";
@@ -44,18 +46,19 @@ public class SmsService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (socket == null) {
+        if (!started) {
+            started = true;
             messages = new java.util.concurrent.CopyOnWriteArrayList<>();
 
             String address = intent.getStringExtra(ADDRESS);
             int port = intent.getIntExtra(PORT, 80);
             socket = new Socket();
 
-            socketConnectionThread = new SocketConnectionThread(address, port);
+            socketConnectionThread = new Thread(new SocketConnectionThread(address, port));
             socketConnectionThread.start();
-            smsSendThread = new SendSmsThread();
+            smsSendThread = new Thread(new SendSmsThread());
             smsSendThread.start();
-            requestThread = new RequestThread();
+            requestThread = new Thread(new RequestThread());
             requestThread.start();
 
             Notification note = new NotificationCompat.Builder(this)
@@ -73,64 +76,60 @@ public class SmsService extends Service {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        socket = null;
         socketConnectionThread.interrupt();
         smsSendThread.interrupt();
         requestThread.interrupt();
-        sendResponseThread.interrupt();
         messages.clear();
+        started = false;
         stopForeground(true);
         stopSelf();
     }
 
-    private class SendSmsThread extends Thread {
+    private class SendSmsThread implements Runnable {
         @Override
         public void run() {
-            new Runnable() {
-                @Override
-                public void run() {
-                    while (!isInterrupted()) {
-                        if (!messages.isEmpty()) {
-                            SmsMessage message = messages.get(0);
-                            SmsManager smsManager = SmsManager.getDefault();
-                            smsManager.sendTextMessage(message.phoneNumber, null, message.text, null, null);
-                            messages.remove(0);
-                        }
-                        try {
-                            sleep(20000L);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
+            while (!Thread.currentThread().isInterrupted()) {
+                if (!messages.isEmpty()) {
+                    SmsMessage message = messages.get(0);
+                    SmsManager smsManager = SmsManager.getDefault();
+                    smsManager.sendTextMessage(message.phoneNumber, null, message.text, null, null);
+                    messages.remove(0);
                 }
-            };
+                try {
+                    Thread.sleep(2000L);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
         }
     }
 
-    private class RequestThread extends Thread {
+    private class RequestThread implements Runnable {
         @Override
         public void run() {
-            while (!isInterrupted()) {
+            while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    Packet<SmsMessage> smsMessagePacket = Packet.read(socket.getInputStream());
-                    messages.addAll(smsMessagePacket.getMessages());
-                    Packet<SmsMessage> responsePacket = Packet.createResponsePacket(smsMessagePacket);
-                    responsePacket.write(socket.getOutputStream());
+                    Packet<SmsMessage> smsMessagePacket = Packet.read(socket);
+                    if (smsMessagePacket != null) {
+                        messages.addAll(smsMessagePacket.getMessages());
+                        Packet<SmsMessage> responsePacket = Packet.createResponsePacket(smsMessagePacket);
+                        responsePacket.write(socket);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (IllegalConversionException e) {
                     e.printStackTrace();
                 }
                 try {
-                    sleep(20000L);
+                    Thread.sleep(5000L);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
                 }
             }
         }
     }
 
-    private class SocketConnectionThread extends Thread {
+    private class SocketConnectionThread implements Runnable {
         private String host;
         private int port;
 
@@ -141,7 +140,7 @@ public class SmsService extends Service {
 
         @Override
         public void run() {
-            while (!isInterrupted()) {
+            while (!Thread.currentThread().isInterrupted()) {
                 if (!socket.isConnected()) {
                     try {
                         SocketAddress socketAddress = new InetSocketAddress(host, port);
@@ -149,11 +148,11 @@ public class SmsService extends Service {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    try {
-                        sleep(5000L);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                }
+                try {
+                    Thread.sleep(5000L);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
             }
         }
