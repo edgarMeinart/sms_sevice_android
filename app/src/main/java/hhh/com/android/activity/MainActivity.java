@@ -20,7 +20,7 @@ import hhh.com.android.service.SmsService;
  * Created by konstantin.bogdanov on 05.11.2015.
  */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private final static Pattern pattern = Pattern.compile("[a-zA-Z]");
+    private final static Pattern checkIsDomainPattern = Pattern.compile("[a-zA-Z]");
 
     private EditText addressTxt;
     private EditText portTxt;
@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void run() {
                 final String address = addressTxt.getText().toString();
                 String ip = null;
-                Matcher matcher = pattern.matcher(address);
+                Matcher matcher = checkIsDomainPattern.matcher(address);
                 if (matcher.find()) {
                     try {
                         ip = InetAddress.getByName(address).getHostAddress();

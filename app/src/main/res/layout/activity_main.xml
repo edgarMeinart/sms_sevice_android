@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <EditText
-            android:text="sms.kvit.lv"
+            android:text="rpi.kvit.lv"
             android:id="@+id/addressText"
             android:hint="@string/address"
             android:singleLine="true"
