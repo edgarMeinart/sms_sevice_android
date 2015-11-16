@@ -150,6 +150,11 @@ public class SmsService extends Service {
                     }
                 }
                 try {
+                    Packet.createPingPacket().write(socket);
+                } catch (IOException e) {
+                    socket = new Socket();
+                }
+                try {
                     Thread.sleep(5000L);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
