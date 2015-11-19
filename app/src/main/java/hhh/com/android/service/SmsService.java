@@ -2,7 +2,9 @@ package hhh.com.android.service;
 
 import android.app.Notification;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
@@ -23,6 +25,8 @@ import java.net.SocketAddress;
 import java.util.List;
 import java.util.jar.Pack200;
 
+import hhh.com.android.db.ReceivedSmsMessagesStorageFacade;
+
 /**
  * Created by konstantin.bogdanov on 05.11.2015.
  */
@@ -35,8 +39,10 @@ public class SmsService extends Service {
     Socket socket;
     Thread smsSendThread;
     Thread requestThread;
-    Thread sendResponseThread;
+    Thread outputThread;
     Thread socketConnectionThread;
+
+    BroadcastReceiver smsBroadcastReceiver;
 
     @Nullable
     @Override
@@ -60,6 +66,14 @@ public class SmsService extends Service {
             smsSendThread.start();
             requestThread = new Thread(new RequestThread());
             requestThread.start();
+            outputThread = new Thread(new OutputThread());
+            outputThread.start();
+            smsBroadcastReceiver = new SmsBroadcastReceiver();
+
+            IntentFilter filter = new IntentFilter();
+            filter.addAction("android.provider.Telephony.SMS_RECEIVED");
+            filter.addAction(android.telephony.TelephonyManager.ACTION_PHONE_STATE_CHANGED);
+            registerReceiver(smsBroadcastReceiver, filter);
 
             Notification note = new NotificationCompat.Builder(this)
                     .addAction(android.R.drawable.btn_default, "test", null)
@@ -79,6 +93,9 @@ public class SmsService extends Service {
         socketConnectionThread.interrupt();
         smsSendThread.interrupt();
         requestThread.interrupt();
+        outputThread.interrupt();
+
+        unregisterReceiver(smsBroadcastReceiver);
         messages.clear();
         started = false;
         stopForeground(true);
@@ -112,12 +129,34 @@ public class SmsService extends Service {
                     Packet<SmsMessage> smsMessagePacket = Packet.read(socket);
                     if (smsMessagePacket != null) {
                         messages.addAll(smsMessagePacket.getMessages());
-                        Packet<SmsMessage> responsePacket = Packet.createResponsePacket(smsMessagePacket);
-                        responsePacket.write(socket);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (IllegalConversionException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    Thread.sleep(5000L);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
+
+    private class OutputThread implements Runnable {
+        @Override
+        public void run() {
+            while (!Thread.currentThread().isInterrupted()) {
+                try {
+                    List<SmsMessage> messages = ReceivedSmsMessagesStorageFacade.getInstance().getNonSentSmsMessages();
+                    if (messages.size() > 0) {
+                        Packet<SmsMessage> packet = new Packet<>(SmsMessage.class);
+                        packet.setMessages(messages);
+                        packet.write(socket);
+                        ReceivedSmsMessagesStorageFacade.getInstance().setSentStatus(messages);
+                    }
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
                 try {

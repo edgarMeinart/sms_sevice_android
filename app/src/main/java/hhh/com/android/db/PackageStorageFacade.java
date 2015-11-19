@@ -23,6 +23,6 @@ public class PackageStorageFacade {
     }
 
     private SQLiteDatabase getDatabase() {
-        return Application.getDatabase(Application.getContext());
+        return Application.getDatabase();
     }
 }

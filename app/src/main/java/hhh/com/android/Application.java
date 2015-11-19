@@ -26,11 +26,11 @@ public class Application extends android.app.Application {
     }
 
     public static @Nullable
-    SQLiteDatabase getDatabase(Context context) {
-        return ((Application)context.getApplicationContext()).getDatabase();
+    SQLiteDatabase getDatabase() {
+        return ((Application)context).getDb();
     }
 
-    private @Nullable SQLiteDatabase getDatabase() {
+    private @Nullable SQLiteDatabase getDb() {
         try {
             return getDBHelper().getWritableDatabase();
         } catch (Exception e) {

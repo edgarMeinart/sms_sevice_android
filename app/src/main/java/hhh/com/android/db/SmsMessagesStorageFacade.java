@@ -23,10 +23,10 @@ public class SmsMessagesStorageFacade {
     }
 
     private SQLiteDatabase getDatabase() {
-        return Application.getDatabase(Application.getContext());
+        return Application.getDatabase();
     }
 
-    public void putMessage(SmsMessage message, long packetId, Long date) {
+    public void putMessage(SmsMessage message, long packetId) {
         ContentValues values = new ContentValues();
         values.put(SmsMessageEntry.COLUMN_NAME_ENTRY_ID, message.id);
         values.put(SmsMessageEntry.COLUMN_NAME_PHONE_NUMBER, message.phoneNumber);

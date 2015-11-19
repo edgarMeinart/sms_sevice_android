@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import hhh.com.android.db.ReceivedSmsMessageEntryContract.ReceivedSmsMessageEntry;
 import hhh.com.android.db.SmsMessageEntryContract.SmsMessageEntry;
 
 import static hhh.com.android.db.PacketEntryContract.*;
@@ -33,6 +34,18 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String SQL_DELETE_TABLE_SMS_MESSAGES =
             "DROP TABLE IF EXISTS " + SmsMessageEntry.TABLE_NAME;
 
+    private static final String SQL_CREATE_TABLE_RECEIVER_SMS_MESSAGES =
+            "CREATE TABLE " + ReceivedSmsMessageEntry.TABLE_NAME + " (" +
+                    ReceivedSmsMessageEntry._ID + " INTEGER PRIMARY KEY" + COMMA_SEP +
+                    ReceivedSmsMessageEntry.COLUMN_NAME_PHONE_NUMBER + INTEGER_TYPE + COMMA_SEP +
+                    ReceivedSmsMessageEntry.COLUMN_NAME_MESSAGE_TEXT + TEXT_TYPE + COMMA_SEP +
+                    ReceivedSmsMessageEntry.COLUMN_NAME_MESSAGE_SENT + INTEGER_TYPE + COMMA_SEP +
+                    ReceivedSmsMessageEntry.COLUMN_NAME_PACKET_ID + INTEGER_TYPE +
+                    ")";
+
+    private static final String SQL_DELETE_TABLE_RECEIVED_SMS_MESSAGES =
+            "DROP TABLE IF EXISTS " + ReceivedSmsMessageEntry.TABLE_NAME;
+
     private static final String SQL_DELETE_TABLE_PACKETS =
             "DROP TABLE IF EXISTS " + PacketEntrty.TABLE_NAME;
 
@@ -52,12 +65,14 @@ public class DbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(SQL_CREATE_TABLE_PACKETS);
         db.execSQL(SQL_CREATE_TABLE_SMS_MESSAGES);
+        db.execSQL(SQL_CREATE_TABLE_RECEIVER_SMS_MESSAGES);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL(SQL_DELETE_TABLE_PACKETS);
         db.execSQL(SQL_DELETE_TABLE_SMS_MESSAGES);
+        db.execSQL(SQL_DELETE_TABLE_RECEIVED_SMS_MESSAGES);
         onCreate(db);
     }
 
