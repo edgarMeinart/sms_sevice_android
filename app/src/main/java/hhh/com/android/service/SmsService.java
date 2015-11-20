@@ -109,7 +109,7 @@ public class SmsService extends Service {
                 if (!messages.isEmpty()) {
                     SmsMessage message = messages.get(0);
                     SmsManager smsManager = SmsManager.getDefault();
-                    smsManager.sendTextMessage(message.phoneNumber, null, message.text, null, null);
+                    smsManager.sendTextMessage(message.getPhoneNumber(), null, message.getText(), null, null);
                     messages.remove(0);
                 }
                 try {
@@ -158,6 +158,10 @@ public class SmsService extends Service {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (IllegalConversionException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
                 }
                 try {
                     Thread.sleep(5000L);
@@ -192,6 +196,10 @@ public class SmsService extends Service {
                     Packet.createPingPacket().write(socket);
                 } catch (IOException e) {
                     socket = new Socket();
+                } catch (IllegalConversionException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
                 }
                 try {
                     Thread.sleep(5000L);

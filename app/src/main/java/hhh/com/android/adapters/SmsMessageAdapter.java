@@ -2,7 +2,6 @@ package hhh.com.android.adapters;
 
 import android.telephony.SmsMessage;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,24 +10,30 @@ import java.util.List;
  */
 public class SmsMessageAdapter {
     private List<SmsMessage> messages;
-    private List<com.hhh.protocol.message.SmsMessage> adaptedMessages;
+    private com.hhh.protocol.message.SmsMessage newSmsMessage;
 
     public SmsMessageAdapter(SmsMessage[] messages) {
         this.messages = Arrays.asList(messages);
     }
 
-    public List<com.hhh.protocol.message.SmsMessage> getMessages() {
+    public com.hhh.protocol.message.SmsMessage getMessages() {
         if (messages != null) {
-            adaptedMessages = new ArrayList<>();
-            for (SmsMessage message : this.messages) {
+            newSmsMessage = new com.hhh.protocol.message.SmsMessage();
+            newSmsMessage.setPhoneNumber(messages.get(0).getDisplayOriginatingAddress());
+            if (messages.size() == 1) {
+                SmsMessage message = messages.get(0);
                 com.hhh.protocol.message.SmsMessage newMessage = new com.hhh.protocol.message.SmsMessage();
-                newMessage.phoneNumber = message.getDisplayOriginatingAddress();
-                newMessage.text = message.getDisplayMessageBody();
-                adaptedMessages.add(newMessage);
+                newMessage.setText(message.getDisplayMessageBody());
+            } else {
+                StringBuilder stringBuilder = new StringBuilder();
+                for (SmsMessage message : this.messages) {
+                    stringBuilder.append(message.getDisplayMessageBody());
+                }
+                newSmsMessage.setText(stringBuilder.toString());
             }
+            messages = null;
         }
-
-        return adaptedMessages;
+        return newSmsMessage;
     }
 
 }

@@ -53,9 +53,9 @@ public class ReceivedSmsMessagesStorageFacade {
 
     public void putMessage(SmsMessage message, long packetId) {
         ContentValues values = new ContentValues();
-        values.put(ReceivedSmsMessageEntry.COLUMN_NAME_PHONE_NUMBER, message.phoneNumber);
+        values.put(ReceivedSmsMessageEntry.COLUMN_NAME_PHONE_NUMBER, message.getPhoneNumber());
         values.put(ReceivedSmsMessageEntry.COLUMN_NAME_MESSAGE_SENT, 0);
-        values.put(ReceivedSmsMessageEntry.COLUMN_NAME_MESSAGE_TEXT, message.text);
+        values.put(ReceivedSmsMessageEntry.COLUMN_NAME_MESSAGE_TEXT, message.getText());
         values.put(ReceivedSmsMessageEntry.COLUMN_NAME_PACKET_ID, packetId);
         getDatabase().insert(
                 ReceivedSmsMessageEntry.TABLE_NAME,
@@ -70,7 +70,7 @@ public class ReceivedSmsMessagesStorageFacade {
 
         for (SmsMessage message : smsMessages) {
             getDatabase().update(ReceivedSmsMessageEntry.TABLE_NAME, values, ReceivedSmsMessageEntry._ID + " LIKE ?",
-                    new String[]{String.valueOf(message.id)});
+                    new String[]{String.valueOf(message.getId())});
         }
     }
 

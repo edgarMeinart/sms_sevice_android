@@ -28,10 +28,10 @@ public class SmsMessagesStorageFacade {
 
     public void putMessage(SmsMessage message, long packetId) {
         ContentValues values = new ContentValues();
-        values.put(SmsMessageEntry.COLUMN_NAME_ENTRY_ID, message.id);
-        values.put(SmsMessageEntry.COLUMN_NAME_PHONE_NUMBER, message.phoneNumber);
+        values.put(SmsMessageEntry.COLUMN_NAME_ENTRY_ID, message.getId());
+        values.put(SmsMessageEntry.COLUMN_NAME_PHONE_NUMBER, message.getPhoneNumber());
         values.put(SmsMessageEntry.COLUMN_NAME_MESSAGE_SENT, 0);
-        values.put(SmsMessageEntry.COLUMN_NAME_MESSAGE_TEXT, message.text);
+        values.put(SmsMessageEntry.COLUMN_NAME_MESSAGE_TEXT, message.getText());
         values.put(SmsMessageEntry.COLUMN_NAME_PACKET_ID, packetId);
         getDatabase().insert(
                 SmsMessageEntry.TABLE_NAME,

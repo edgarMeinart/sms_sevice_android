@@ -21,7 +21,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         SmsMessage[] smsMessages = getMessagesFromIntent(intent);
-        ReceivedSmsMessagesStorageFacade.getInstance().putMessages(new SmsMessageAdapter(smsMessages).getMessages());
+        ReceivedSmsMessagesStorageFacade.getInstance().putMessage(new SmsMessageAdapter(smsMessages).getMessages());
     }
 
     public static SmsMessage[] getMessagesFromIntent(Intent intent) {
