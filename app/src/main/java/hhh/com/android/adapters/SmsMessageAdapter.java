@@ -22,8 +22,7 @@ public class SmsMessageAdapter {
             newSmsMessage.setPhoneNumber(messages.get(0).getDisplayOriginatingAddress());
             if (messages.size() == 1) {
                 SmsMessage message = messages.get(0);
-                com.hhh.protocol.message.SmsMessage newMessage = new com.hhh.protocol.message.SmsMessage();
-                newMessage.setText(message.getDisplayMessageBody());
+                newSmsMessage.setText(message.getDisplayMessageBody());
             } else {
                 StringBuilder stringBuilder = new StringBuilder();
                 for (SmsMessage message : this.messages) {
