@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.system.ErrnoException;
 import android.telephony.SmsManager;
+import android.telephony.TelephonyManager;
 
 import com.hhh.protocol.IllegalConversionException;
 import com.hhh.protocol.Packet;
@@ -109,7 +110,7 @@ public class SmsService extends Service {
                 if (!messages.isEmpty()) {
                     SmsMessage message = messages.get(0);
                     SmsManager smsManager = SmsManager.getDefault();
-                    smsManager.sendTextMessage(message.getPhoneNumber(), null, message.getText(), null, null);
+                    smsManager.sendMultipartTextMessage(message.getPhoneNumber(), null, smsManager.divideMessage(message.getText()), null, null);
                     messages.remove(0);
                 }
                 try {
