@@ -204,7 +204,7 @@ public class SmsService extends Service {
         @Override
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
-                if (!socket.isConnected()) {
+                if (!socket.isConnected() && !socket.isClosed()) {
                     try {
                         SocketAddress socketAddress = new InetSocketAddress(host, port);
                         socket.connect(socketAddress);
