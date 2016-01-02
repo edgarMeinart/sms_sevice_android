@@ -24,6 +24,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.jar.Pack200;
 
 import hhh.com.android.db.ReceivedSmsMessagesStorageFacade;
@@ -34,7 +35,7 @@ import hhh.com.android.db.ReceivedSmsMessagesStorageFacade;
 public class SmsService extends Service {
     boolean started;
     private List<SmsMessage> messages;
-    private boolean socketCreatedBefore;
+    private Semaphore semaphore = new Semaphore(1);
 
     public final static String ADDRESS = "address";
     public static final String PORT = "port";
@@ -46,11 +47,8 @@ public class SmsService extends Service {
 
     BroadcastReceiver smsBroadcastReceiver;
 
-    synchronized private void createNewSocket() {
-        if (socketCreatedBefore) {
-            socketCreatedBefore = false;
-        } else {
-            socketCreatedBefore = true;
+    private void createNewSocket() {
+        if (semaphore.tryAcquire()) {
             try {
                 socket.close();
             } catch (IOException e) {
@@ -58,6 +56,7 @@ public class SmsService extends Service {
             }
             socket = new Socket();
         }
+        semaphore.release();
     }
 
     @Nullable
@@ -209,6 +208,7 @@ public class SmsService extends Service {
                         SocketAddress socketAddress = new InetSocketAddress(host, port);
                         socket.connect(socketAddress);
                     } catch (IOException e) {
+                        createNewSocket();
                         e.printStackTrace();
                     }
                 }
