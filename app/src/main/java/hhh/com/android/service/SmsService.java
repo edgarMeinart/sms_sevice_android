@@ -34,6 +34,7 @@ import hhh.com.android.db.ReceivedSmsMessagesStorageFacade;
 public class SmsService extends Service {
     boolean started;
     private List<SmsMessage> messages;
+    private boolean socketCreatedBefore;
 
     public final static String ADDRESS = "address";
     public static final String PORT = "port";
@@ -44,6 +45,15 @@ public class SmsService extends Service {
     Thread socketConnectionThread;
 
     BroadcastReceiver smsBroadcastReceiver;
+
+    synchronized private void createNewSocket() {
+        if (socketCreatedBefore) {
+            socketCreatedBefore = false;
+        } else {
+            socketCreatedBefore = true;
+            socket = new Socket();
+        }
+    }
 
     @Nullable
     @Override
@@ -132,6 +142,7 @@ public class SmsService extends Service {
                         messages.addAll(smsMessagePacket.getMessages());
                     }
                 } catch (IOException e) {
+                    createNewSocket();
                     e.printStackTrace();
                 } catch (IllegalConversionException e) {
                     e.printStackTrace();
@@ -158,10 +169,9 @@ public class SmsService extends Service {
                         ReceivedSmsMessagesStorageFacade.getInstance().setSentStatus(messages);
                     }
                 } catch (IOException e) {
+                    createNewSocket();
                     e.printStackTrace();
-                } catch (IllegalConversionException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
+                } catch (IllegalConversionException | IllegalAccessException e) {
                     e.printStackTrace();
                 }
                 try {
@@ -192,15 +202,6 @@ public class SmsService extends Service {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                }
-                try {
-                    Packet.createPingPacket().write(socket);
-                } catch (IOException e) {
-                    socket = new Socket();
-                } catch (IllegalConversionException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
                 }
                 try {
                     Thread.sleep(5000L);
