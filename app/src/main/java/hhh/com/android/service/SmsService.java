@@ -51,6 +51,11 @@ public class SmsService extends Service {
             socketCreatedBefore = false;
         } else {
             socketCreatedBefore = true;
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             socket = new Socket();
         }
     }
@@ -136,21 +141,23 @@ public class SmsService extends Service {
         @Override
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    Packet<SmsMessage> smsMessagePacket = Packet.read(socket);
-                    if (smsMessagePacket != null) {
-                        messages.addAll(smsMessagePacket.getMessages());
+                if (socket.isConnected()) {
+                    try {
+                        Packet<SmsMessage> smsMessagePacket = Packet.read(socket);
+                        if (smsMessagePacket != null) {
+                            messages.addAll(smsMessagePacket.getMessages());
+                        }
+                    } catch (IOException e) {
+                        createNewSocket();
+                        e.printStackTrace();
+                    } catch (IllegalConversionException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    createNewSocket();
-                    e.printStackTrace();
-                } catch (IllegalConversionException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    Thread.sleep(5000L);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                    try {
+                        Thread.sleep(5000L);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
         }
@@ -160,24 +167,26 @@ public class SmsService extends Service {
         @Override
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    List<SmsMessage> messages = ReceivedSmsMessagesStorageFacade.getInstance().getNonSentSmsMessages();
-                    if (messages.size() > 0) {
-                        Packet<SmsMessage> packet = new Packet<>(SmsMessage.class);
-                        packet.setMessages(messages);
-                        packet.write(socket);
-                        ReceivedSmsMessagesStorageFacade.getInstance().setSentStatus(messages);
+                if (socket.isConnected()) {
+                    try {
+                        List<SmsMessage> messages = ReceivedSmsMessagesStorageFacade.getInstance().getNonSentSmsMessages();
+                        if (messages.size() > 0) {
+                            Packet<SmsMessage> packet = new Packet<>(SmsMessage.class);
+                            packet.setMessages(messages);
+                            packet.write(socket);
+                            ReceivedSmsMessagesStorageFacade.getInstance().setSentStatus(messages);
+                        }
+                    } catch (IOException e) {
+                        createNewSocket();
+                        e.printStackTrace();
+                    } catch (IllegalConversionException | IllegalAccessException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    createNewSocket();
-                    e.printStackTrace();
-                } catch (IllegalConversionException | IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    Thread.sleep(5000L);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                    try {
+                        Thread.sleep(5000L);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
         }
